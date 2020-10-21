@@ -32,7 +32,7 @@ func BenchmarkTest(b *testing.B) {
 	defer kprobeDetach(efd)
 
 	// register probe with benchmark and run
-	eb.ProfileProgram(prog.FD(), "kprobe/do_sys_open")
+	eb.ProfileProgram(prog.FD(), "")
 	eb.Run(func(b *testing.B) {
 		// open b.N temp files
 		for i := 0; i < b.N; i++ {

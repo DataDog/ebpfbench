@@ -68,7 +68,11 @@ func (e *EBPFBenchmark) Run(fn func(*testing.B)) {
 			p := post[fd]
 			runTime := p.RunTime - base.RunTime
 			runCount := p.RunCount - base.RunCount
-			results[e.progs[fd]] = &testing.BenchmarkResult{
+			name := e.progs[fd]
+			if name == "" && p.Name != "" {
+				name = p.Name
+			}
+			results[name] = &testing.BenchmarkResult{
 				N: int(runCount),
 				T: runTime,
 			}
@@ -90,7 +94,7 @@ func prettyPrintEBPFResults(benchName string, results map[string]*testing.Benchm
 	buf := new(strings.Builder)
 	for _, name := range names {
 		pr := results[name]
-		_, _ = fmt.Fprintf(buf, "%s/%-*s\t%s\n", benchName, maxLen, name, pr.String())
+		_, _ = fmt.Fprintf(buf, "%s/eBPF/%-*s\t%s\n", benchName, maxLen, name, pr.String())
 	}
 	return buf.String()
 }

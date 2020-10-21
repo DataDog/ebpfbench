@@ -1,6 +1,9 @@
 package ebpfbench
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type disableFunc func() error
 
@@ -17,6 +20,7 @@ func disableBPFStats() error {
 }
 
 type bpfProgramStats struct {
+	Name     string
 	RunCount uint
 	RunTime  time.Duration
 }
@@ -26,7 +30,14 @@ func getProgramStats(fd int) (*bpfProgramStats, error) {
 	if err != nil {
 		return nil, err
 	}
+	name := string(pi.name[:])
+	if li := strings.LastIndexByte(name, 0); li > 0 {
+		name = name[:li]
+	} else {
+		name = ""
+	}
 	return &bpfProgramStats{
+		Name:     name,
 		RunCount: uint(pi.run_cnt),
 		RunTime:  time.Duration(pi.run_time_ns),
 	}, nil
