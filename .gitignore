@@ -20,3 +20,5 @@ vendor/
 # test program object files and generated skeleton
 testdata/rawtp_*.o
 getproginfo_*.go
+testdata/benchtest_*.o
+benchtest_*.go

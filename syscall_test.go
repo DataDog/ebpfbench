@@ -12,7 +12,7 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go getproginfo testdata/rawtp.c
 
 func TestGetProgInfo(t *testing.T) {
-	disableFunc, err := EnableBPFStats()
+	disableFunc, err := enableBPFStats()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestGetProgInfo(t *testing.T) {
 	}
 	f.Close()
 
-	stats, err := GetProgramStats(prog.FD())
+	stats, err := getProgramStats(prog.FD())
 	if err != nil {
 		t.Fatal(err)
 	}
