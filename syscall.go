@@ -3,6 +3,7 @@ package ebpfbench
 import (
 	"fmt"
 	"runtime"
+	"strings"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -75,4 +76,20 @@ func bpfGetProgInfoByFD(fd int) (*bpfProgInfo, error) {
 		return nil, fmt.Errorf("cannot get obj info by fd: %w", err)
 	}
 	return &pi, nil
+}
+
+func cstr(s string) unsafe.Pointer {
+	// zero terminate the string
+	buf := make([]byte, len(s)+1)
+	copy(buf, s)
+
+	return unsafe.Pointer(&buf[0])
+}
+
+func goString(s []byte) string {
+	str := string(s[:])
+	if li := strings.LastIndexByte(str, 0); li > 0 {
+		return str[:li]
+	}
+	return ""
 }

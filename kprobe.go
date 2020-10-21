@@ -8,14 +8,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func cstr(s string) unsafe.Pointer {
-	// zero terminate the string
-	buf := make([]byte, len(s)+1)
-	copy(buf, s)
-
-	return unsafe.Pointer(&buf[0])
-}
-
 func kprobeAttach(retprobe bool, name string, progFd int) (int, error) {
 	var err error
 	attr := unix.PerfEventAttr{}

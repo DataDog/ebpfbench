@@ -1,7 +1,6 @@
 package ebpfbench
 
 import (
-	"strings"
 	"time"
 )
 
@@ -30,12 +29,7 @@ func getProgramStats(fd int) (*bpfProgramStats, error) {
 	if err != nil {
 		return nil, err
 	}
-	name := string(pi.name[:])
-	if li := strings.LastIndexByte(name, 0); li > 0 {
-		name = name[:li]
-	} else {
-		name = ""
-	}
+	name := goString(pi.name[:])
 	return &bpfProgramStats{
 		Name:     name,
 		RunCount: uint(pi.run_cnt),
