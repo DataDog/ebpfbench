@@ -1,21 +1,41 @@
 package ebpfbench
 
 import (
+	"errors"
 	"time"
+
+	"golang.org/x/sys/unix"
 )
 
 type disableFunc func() error
 
+var supportsStatsSyscall = supportsBpfEnableStats()()
+
 func enableBPFStats() (disableFunc, error) {
-	err := writeSysctl(bpfSysctlProcfile, []byte("1"))
+	var fd *wrappedFD
+	var err error
+
+	if supportsStatsSyscall {
+		fd, err = bpfEnableStats()
+		if err != nil && !errors.Is(err, unix.EINVAL) {
+			return nil, err
+		}
+	}
+
+	err = writeSysctl(bpfSysctlProcfile, []byte("1"))
 	if err != nil {
 		return nil, err
 	}
-	return disableBPFStats, nil
+	return disableBPFStats(fd), nil
 }
 
-func disableBPFStats() error {
-	return writeSysctl(bpfSysctlProcfile, []byte("0"))
+func disableBPFStats(fd *wrappedFD) func() error {
+	return func() error {
+		if fd != nil {
+			return fd.Close()
+		}
+		return writeSysctl(bpfSysctlProcfile, []byte("0"))
+	}
 }
 
 type bpfProgramStats struct {

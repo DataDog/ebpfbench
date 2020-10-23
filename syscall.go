@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
+	"sync"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -78,6 +79,23 @@ func bpfGetProgInfoByFD(fd int) (*bpfProgInfo, error) {
 	return &pi, nil
 }
 
+type bpfEnableStatsAttr struct {
+	enable_stats struct {
+		statsType uint32
+	}
+}
+
+func bpfEnableStats() (*wrappedFD, error) {
+	attr := bpfEnableStatsAttr{}
+	attr.enable_stats.statsType = unix.BPF_STATS_RUN_TIME
+
+	fd, err := bpf(unix.BPF_ENABLE_STATS, unsafe.Pointer(&attr), unsafe.Sizeof(attr))
+	if err != nil {
+		return nil, fmt.Errorf("cannot enable bpf stats: %w", err)
+	}
+	return NewWrappedFD(int(fd)), nil
+}
+
 func cstr(s string) unsafe.Pointer {
 	// zero terminate the string
 	buf := make([]byte, len(s)+1)
@@ -92,4 +110,21 @@ func goString(s []byte) string {
 		return str[:li]
 	}
 	return ""
+}
+
+func supportsBpfEnableStats() func() bool {
+	var once sync.Once
+	result := false
+
+	return func() bool {
+		once.Do(func() {
+			fd, err := bpfEnableStats()
+			if err != nil {
+				return
+			}
+			result = true
+			_ = fd.Close()
+		})
+		return result
+	}
 }
